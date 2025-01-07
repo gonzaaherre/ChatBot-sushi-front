@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import Chatbot from "./chatBot"
+import Chatbot from "./components/chatBot"
 
 function App() {
   const [count, setCount] = useState(0)

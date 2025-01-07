@@ -1,0 +1,91 @@
+/* Container principal del chatbot */
+.chatbot-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 500px;
+    margin: auto;
+    background-image: linear-gradient(to bottom, #ffffff, #f7f7f7);
+}
+
+/* Imagen del chatbot */
+.chatbot-image {
+    width: 100px;
+    height: auto;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    border: 4px solid #4CAF50;
+    margin-top: -60px;
+}
+
+/* Título del chatbot */
+h1 {
+    font-family: 'Open Sans', sans-serif;
+    color: #333;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Caja de conversación */
+.conversation {
+    width: 90%;
+    height: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #e7f5e5;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #555;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Estilo del área de texto */
+textarea {
+    width: 90%;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
+    resize: none;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    transition: all 0.3s ease-in-out;
+    background-color: #f7f7f7;
+    margin-left: auto;
+    margin-right: auto;
+    color: #333;
+}
+
+/* Estilo del botón de enviar */
+button {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+button:hover {
+    background-color: #45a049;
+}
