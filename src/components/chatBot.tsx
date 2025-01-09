@@ -18,6 +18,14 @@ const ChatBot = () => {
   // Estado para mensajes y entrada del usuario
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [userInput, setInput] = useState("");
+  // expresion regular: Entrada: "Quiero 2 rolls de salmón y 3 makis de atún."
+  //Salida: ["2 rolls de salmón", "3 makis de atún"]
+  const parseOrder = (orderMessage: string) => {
+    const productPattern = /(\d+)\s*(rolls?|sushis?|makis?|arroz)/gi;
+    const matches = orderMessage.match(productPattern);
+    return matches || [];
+  };
+
 
   // Manejar el envío del mensaje
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
