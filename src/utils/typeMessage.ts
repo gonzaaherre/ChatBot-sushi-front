@@ -11,7 +11,7 @@ export const getMessageType = (message: string) => {
       return "saludo";
     }
     if (
-      lowerMessage.includes("pedido") ||
+      //lowerMessage.includes("pedido") ||
       lowerMessage.includes("orden") ||
       lowerMessage.includes("quiero")
     ) {

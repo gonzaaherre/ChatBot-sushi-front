@@ -55,9 +55,11 @@ const ChatBot = () => {
           //           .join(", ")}`
           //       : "No encontré preguntas frecuentes.";
           //   break;
+
           case "saludo":
             botResponse = "¡Hola! ¿En qué puedo ayudarte?";
             break;
+
           case "faq":
             const keywords = userInput.replace("pregunta sobre ", "").trim();
             try {
@@ -77,15 +79,24 @@ const ChatBot = () => {
               botResponse = "No encontré resultados para tu búsqueda.. Por favor, intenta nuevamente.";
             }
             break;
+
           case "product":
-            const products = await getAllProducts();
-            console.log("Respuesta de productos:", products);
-            botResponse =
-              products.data.length > 0
-                ? `Aquí tienes nuestro menú: ${products.data
-                  .map((product: any) => product.name)
-                  .join(", ")}`
-                : "No encontré productos en el menú.";
+            const productResponse = await getAllProducts(); // Función para obtener los productos
+            console.log("Respuesta del menú:", productResponse);
+
+            if (productResponse.data && productResponse.data.length > 0) {
+              const products = productResponse.data;
+
+              botResponse = "Aquí tienes nuestro menú:\n" +
+                products.map((product: { name: string; description: string; price: number }) =>
+                  `**\n${product.name}**\n` +
+                  ` \n ${product.description}\n` +
+                  `  \nPrecio: $${product.price}\n` +
+                  `\n-------------------------\n`
+                ).join("\n\n");
+            } else {
+              botResponse = "No encontré productos en el menú.";
+            }
             break;
 
           case "order":
