@@ -87,13 +87,11 @@ const ChatBot = () => {
             if (productResponse.data && productResponse.data.length > 0) {
               const products = productResponse.data;
 
-              botResponse = "Aquí tienes nuestro menú:\n" +
-                products.map((product: { name: string; description: string; price: number }) =>
-                  `**\n${product.name}**\n` +
-                  ` \n ${product.description}\n` +
-                  `  \nPrecio: $${product.price}\n` +
-                  `\n-------------------------\n`
-                ).join("\n\n");
+              const productStrings = products.map((product: any) => {
+                return `**${product.name}**\n${product.description}\nPrecio: $${product.price}\n`;
+              });
+
+              botResponse = `Aquí tienes nuestro menú:\n\n${productStrings.join("")}`;
             } else {
               botResponse = "No encontré productos en el menú.";
             }
@@ -143,12 +141,12 @@ const ChatBot = () => {
 
       <div className="conversation">
         {messages.map((msg, index) => (
-          <div
+          <p
             key={index}
             className={`message ${msg.role === "user" ? "user" : "bot"}`}
           >
             {msg.content}
-          </div>
+          </p>
         ))}
       </div>
 

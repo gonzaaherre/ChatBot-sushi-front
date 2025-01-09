@@ -52,11 +52,7 @@ h1 {
 
 /* mensajes */
 .message {
-    padding: 8px 12px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    max-width: 75%;
-    word-wrap: break-word;
+    font-family: monospace;
     font-size: 14px;
 }
 
@@ -68,10 +64,11 @@ h1 {
 }
 
 .message.bot {
-    background-color: #f7f7f7;
+    background-color: #c6efce;
     color: #333;
     margin-right: auto;
     text-align: left;
+    white-space: pre-wrap;
 }
 
 /* area de texto */
