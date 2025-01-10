@@ -1,36 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import chatbotImg from "../assets/chatbot.jpg";
 import "./chatBot.css";
-import {
-  getAllFAQs,
-  getFAQByKeyword,
-} from "../services/FAQ-service";
-import {
-  getAllProducts,
-  getProductByName,
-} from "../services/product-service";
-import { createOrder, } from "../services/order-service";
-
+import { getFAQByKeyword } from "../services/FAQ-service";
+import { initializeMenuCache, parseOrder, verifyProduct, verifyProducts, } from "../services/order-service";
 import { getMessageType } from "../utils/typeMessage";
+import { getAllProducts } from "../services/product-service";
 
 
 const ChatBot = () => {
-  // Estado para mensajes y entrada del usuario
+  //estado para mensajes y entrada del usuario
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [userInput, setInput] = useState("");
-  // expresion regular: Entrada: "Quiero 2 rolls de salmón y 3 makis de atún."
-  //Salida: ["2 rolls de salmón", "3 makis de atún"]
-  const parseOrder = (orderMessage: string) => {
-    const productPattern = /(\d+)\s*(rolls?|sushis?|makis?|arroz)/gi;
-    const matches = orderMessage.match(productPattern);
-    return matches || [];
-  };
+
+  useEffect(() => {
+    initializeMenuCache();
+  }, []);
 
 
-  // Manejar el envío del mensaje
+  //manejar el envío del mensaje
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
     try {
-      if (e) e.preventDefault(); // Evitar el envío vacío
+      if (e) e.preventDefault(); //evitar el envío vacío
 
       if (!userInput.trim()) return;
 
@@ -41,10 +31,10 @@ const ChatBot = () => {
 
       console.log("Mensaje del usuario:", userMessage);
 
-      // Actualizar el estado con el nuevo mensaje
+      //actualizar el estado con el nuevo mensaje
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-      // Determinar el tipo de mensaje y obtener respuesta del bot
+      //determinar el tipo de mensaje y obtener respuesta del bot
       const messageType = getMessageType(userInput);
       console.log("Tipo de mensaje identificado:", messageType);
 
@@ -76,7 +66,7 @@ const ChatBot = () => {
               console.log("Respuesta de búsqueda de FAQ por palabra clave:", faqResponse);
 
               if (faqResponse.data && faqResponse.data.length > 0) {
-                // Accede al primer elemento del array
+                //accede al primer elemento del array
                 const faq = faqResponse.data[0];
                 botResponse = faq.answer;//`Pregunta: ${faq.question}\nRespuesta: ${faq.answer}`;
               } else {
@@ -89,7 +79,7 @@ const ChatBot = () => {
             break;
 
           case "product":
-            const productResponse = await getAllProducts(); // Función para obtener los productos
+            const productResponse = await getAllProducts(); //función para obtener los productos
             console.log("Respuesta del menú:", productResponse);
 
             if (productResponse.data && productResponse.data.length > 0) {
@@ -105,12 +95,31 @@ const ChatBot = () => {
             }
             break;
 
+
           case "order":
             console.log("Mensaje de orden identificado.");
-            botResponse =
-              "¿Podrías confirmar qué producto te gustaría ordenar y cuántos?";
-            break;
 
+            //parsear el mensaje del usuario para extraer los productos
+            const parsedOrder = parseOrder(userInput); //ahora solo tenemos los nombres de los productos
+            console.log("Productos identificados:", parsedOrder);
+            if (parsedOrder.length === 0) {
+              botResponse = "No entendí tu pedido. Por favor, menciona productos y cantidades.";
+              break;
+            }
+
+            const { validProducts, invalidProducts } = await verifyProducts(parsedOrder);
+
+            if (validProducts.length > 0) {
+              validProducts.forEach((item: { quantity: number; name: string; details: { name: string; price: number } }) => {
+                botResponse += `- ${item.quantity} x ${item.details.name} ($${item.details.price} c/u)\n`;
+              });
+
+              invalidProducts.forEach((item: { quantity: number; name: string }) => {
+                botResponse += `- ${item.quantity} x ${item.name}\n`;
+              });
+              botResponse += "\n¿Quieres ver el menú para seleccionar otros productos?";
+            }
+            break
           default:
             console.log("Mensaje no reconocido.");
             botResponse = "Lo siento, no entiendo tu mensaje.";
@@ -123,23 +132,23 @@ const ChatBot = () => {
 
       console.log("Respuesta del bot:", botResponse);
 
-      // Agregar la respuesta del bot al estado
+      //agregar la respuesta del bot al estado
       setMessages((prevMessages) => [
         ...prevMessages,
         { role: "bot", content: botResponse },
       ]);
 
-      setInput(""); // Limpiar el campo de entrada después de enviar el mensaje
+      setInput(""); //limpiar el campo de entrada después de enviar el mensaje
     } catch (error) {
       console.error("Error en handleSubmit:", error);
     }
   };
 
-  // Manejar el envío con Enter
+  //manejar el envío con Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Evitar el salto de línea
-      handleSubmit(); // Llamar a la función de envío
+      e.preventDefault(); //evitar el salto de línea
+      handleSubmit(); //lLlamar a la función de envío
     }
   };
 
@@ -165,8 +174,8 @@ const ChatBot = () => {
           id="textAreaInput"
           cols={50}
           rows={5}
-          value={userInput} // Conectar el value al estado para eliminarlo después
-          onChange={(e) => setInput(e.target.value)} // Setear en tiempo real
+          value={userInput} //conectar el value al estado para eliminarlo después
+          onChange={(e) => setInput(e.target.value)} //setear en tiempo real
           onKeyDown={handleKeyDown}
           placeholder="Escribe un mensaje..."
           style={{ fontSize: 14, padding: 10 }}
