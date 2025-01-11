@@ -3,7 +3,7 @@ import { getAllProducts, getProductByName } from "./product-service";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
-let menuCache: any[] = []; // Caché del menú
+let menuCache: Array<{ name: string }> = [] // Caché del menú
 
 //cargar menu al iniciar
 export const initializeMenuCache = async () => {
@@ -12,6 +12,8 @@ export const initializeMenuCache = async () => {
     if (response.data) {
       menuCache = response.data;
     }
+    console.log("Caché del menú inicializado:", menuCache);
+    return menuCache; // <--- Add this line
   } catch (error) {
     console.error("Error al inicializar el caché del menú:", error);
   }
@@ -19,47 +21,55 @@ export const initializeMenuCache = async () => {
 
 //verificar si un producto existe
 export const verifyProduct = async (productName: string) => {
-  // Buscar en el caché solo con el nombre del producto
-  const cachedProduct = menuCache.find(
-    (product) => product.name.toLowerCase() === productName.toLowerCase()
-  );
-
-  if (cachedProduct) {
-    return cachedProduct; // Producto encontrado en caché
-  }
-
-  // Si no está en el caché, consultar al backend
   try {
-    const response = await getProductByName(productName); // Enviar solo el nombre del producto
-    if (response && response.data) {  // Verificar que la respuesta sea válida
-      return response.data; // Producto encontrado en el backend
+    const cachedProduct = menuCache.find(
+      (product) => product.name.toLowerCase() === productName.toLowerCase()
+    );
+
+    if (cachedProduct) {
+      console.log("Producto encontrado en caché:", cachedProduct);
+      return cachedProduct; //producto encontrado en caché
+    }
+
+    console.log("product enviado al back :", productName);
+    const response = await getProductByName(productName); //rnviar solo el nombre del producto
+
+    if (response && response.data) {  //verificar que la respuesta sea válida
+      console.log("Producto encontrado en el backend:", response.data);
+      return response.data; //producto encontrado en el backend
     } else {
       throw new Error("Producto no encontrado en el backend.");
     }
   } catch (error) {
     console.error("Error al buscar el producto en el backend:", error);
-    return null;  // Retornar null si no se encuentra el producto
+    return null;  //retornar null si no se encuentra el producto
   }
 };
 
 
 
 //procesar varios productos
-export const verifyProducts = async (parsedOrder: string[]) => {
+export const verifyProducts = async (parsedOrder: { name: string, quantity: number }[]) => {
   const results = await Promise.all(
-    parsedOrder.map(async (productName) => {
+    parsedOrder.map(async ({ name, quantity }) => {
       //encuentra el producto y obtiene sus detalles
-      const product = await verifyProduct(productName);
+      console.log("Verificando producto:", name);
+      const product = await verifyProduct(name);
+
+      //eerificar si el producto existe
+      const exists = !!product;
+
+      //retornar el producto y su existencia junto con la cantidad
       return {
-        name: productName,
-        exists: !!product,
-        details: product || null,
-        quantity: 1,
+        name,
+        quantity,
+        exists,
+        details: exists ? product : null, //asegurarse de que 'details' sea null si no existe
       };
     })
   );
 
-  // Filtrar productos válidos e inválidos
+  //filtrar productos válidos e inválidos
   const validProducts = results.filter((item) => item.exists);
   const invalidProducts = results.filter((item) => !item.exists);
 
@@ -69,25 +79,57 @@ export const verifyProducts = async (parsedOrder: string[]) => {
 
 
 export const createOrder = async (orderData: any) => {
-  return axios.post(`${API_BASE_URL}/order`, orderData);
-};
-
-
-// expresion regular: Entrada: "Quiero 2 rolls de salmón y 3 makis de atún."
-//Salida: ["2 rolls de salmón", "3 makis de atún"]
-export const parseOrder = (orderMessage: string) => {
-  // Buscar productos en el mensaje (ejemplo: "2 rolls de salmón", "3 makis de atún")
-  const productPattern = /(\d+)\s*(rolls?|makis?|sushis?|arroz|salmón|atún)/gi;
-  const matches = orderMessage.match(productPattern);
-
-  // Extraer solo los nombres de los productos
-  if (matches) {
-    return matches.map((match) => {
-      const words = match.split(' ');
-      return words.slice(1).join(' ');  // Devolver solo el nombre del producto (sin la cantidad)
-    });
+  try {
+    const response = await axios.post(`${API_BASE_URL}/order`, orderData);
+    console.log("Orden creada exitosamente:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear la orden:", error);
+    throw error;
   }
-  return [];
 };
+
+export const parseOrder = (orderMessage: string, cachedMenu: Array<{ name: string }>) => {
+  const parsedProducts: { quantity: number; name: string }[] = [];
+
+  //normalizar el mensaje
+  const normalizedMessage = orderMessage
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") //eliminar tildes
+    .toLowerCase()
+    .replace(/[\?\s]+/g, " "); //reemplazar signos de interrogación y espacios por un solo espacio
+
+  console.log("Mensaje normalizado:", normalizedMessage);
+
+  cachedMenu.forEach((product) => {
+    //normalizar el nombre del producto
+    const normalizedName = product.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") //eliminar tildes
+      .toLowerCase();
+
+    console.log("Buscando producto en caché:", normalizedName);
+
+    //usar una expresión regular para buscar coincidencias de productos en el mensaje
+    const regex = new RegExp(`(\\d+)\\s+.*${normalizedName}.*`, "gi");
+    let match;
+
+    // Buscar coincidencias con el nombre del producto
+    while ((match = regex.exec(normalizedMessage)) !== null) {
+      const quantity = match[1] ? parseInt(match[1], 10) : 1;  //si no hay cantidad, por defecto sera 1
+      console.log(`Producto encontrado: ${product.name} con cantidad: ${quantity}`);
+      parsedProducts.push({ quantity, name: product.name });
+    }
+  });
+
+  console.log("Productos parseados:", parsedProducts);
+  return parsedProducts;
+};
+
+
+
+
+
+
 
 

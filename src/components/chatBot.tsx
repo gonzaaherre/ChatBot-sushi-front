@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import chatbotImg from "../assets/chatbot.jpg";
 import "./chatBot.css";
 import { getFAQByKeyword } from "../services/FAQ-service";
-import { initializeMenuCache, parseOrder, verifyProduct, verifyProducts, } from "../services/order-service";
+import { initializeMenuCache, parseOrder, verifyProducts, } from "../services/order-service";
 import { getMessageType } from "../utils/typeMessage";
 import { getAllProducts } from "../services/product-service";
 
@@ -11,11 +11,15 @@ const ChatBot = () => {
   //estado para mensajes y entrada del usuario
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [userInput, setInput] = useState("");
+  const [menuCache, setMenuCache] = useState<any[]>([]);
 
   useEffect(() => {
-    initializeMenuCache();
+    const loadMenuCache = async () => {
+      const response = await initializeMenuCache();
+      setMenuCache(response || []);
+    };
+    loadMenuCache();
   }, []);
-
 
   //manejar el envío del mensaje
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
@@ -97,11 +101,15 @@ const ChatBot = () => {
 
 
           case "order":
-            console.log("Mensaje de orden identificado.");
+            console.log("Mensaje de orden identificado.", userInput);
 
             //parsear el mensaje del usuario para extraer los productos
-            const parsedOrder = parseOrder(userInput); //ahora solo tenemos los nombres de los productos
+            const parsedOrder = parseOrder(userInput, menuCache); //ahora solo tenemos los nombres de los productos
+
+            //const productNames = parsedOrder.map((item) => item.name);
+
             console.log("Productos identificados:", parsedOrder);
+
             if (parsedOrder.length === 0) {
               botResponse = "No entendí tu pedido. Por favor, menciona productos y cantidades.";
               break;
@@ -110,16 +118,19 @@ const ChatBot = () => {
             const { validProducts, invalidProducts } = await verifyProducts(parsedOrder);
 
             if (validProducts.length > 0) {
-              validProducts.forEach((item: { quantity: number; name: string; details: { name: string; price: number } }) => {
-                botResponse += `- ${item.quantity} x ${item.details.name} ($${item.details.price} c/u)\n`;
+              validProducts.forEach((item: any) => {
+                botResponse += `- ${item.quantity} x ${item.name} ($${item.details.price} c/u)\n`;
               });
+            }
 
-              invalidProducts.forEach((item: { quantity: number; name: string }) => {
+            if (invalidProducts.length > 0) {
+              botResponse += "\nNo encontramos estos productos en el menú:\n";
+              invalidProducts.forEach((item: any) => {
                 botResponse += `- ${item.quantity} x ${item.name}\n`;
               });
-              botResponse += "\n¿Quieres ver el menú para seleccionar otros productos?";
+              botResponse += "¿Quieres ver el menú para seleccionar otros productos?";
             }
-            break
+            break;
           default:
             console.log("Mensaje no reconocido.");
             botResponse = "Lo siento, no entiendo tu mensaje.";
