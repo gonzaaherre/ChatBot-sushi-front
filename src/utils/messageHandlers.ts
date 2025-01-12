@@ -67,7 +67,9 @@ export const handleOrder = async (userInput: string, menuCache: any[], currentOr
         }
     });
 
-    let response = "Tu pedido ha sido actualizado. ";
+    let response = "Tu pedido ha sido actualizado:\n " + currentOrder.map((item) => {
+        return `- ${item.quantity} x ${item.name} ($${item.price} c/u)\n`;
+    });
     if (invalidProducts.length > 0) {
         response += "Algunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
     } else {

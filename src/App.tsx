@@ -7,7 +7,7 @@ function App() {
 
   return (
     <>
-       <Chatbot></Chatbot>
+      <Chatbot></Chatbot>
     </>
   )
 }

@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from "react";
 import chatbotImg from "../assets/chatbot.jpg";
 import "./chatBot.css";
-import { initializeMenuCache, parseOrder, verifyProducts, createOrder } from "../services/order-service";
+import { initializeMenuCache } from "../services/order-service";
 import { handleUserMessage } from "../utils/handleUserMessage ";
 
 
 const ChatBot = () => {
   //estado para mensajes y entrada del usuario
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([{
+    role: "bot",
+    content: `¡Hola! Bienvenido al bot de pedidos de sushi. 🎉🍣\n
+Estas son algunas cosas que puedes hacer:
+1. *Ver nuestro menú*: Solo escribe "¿Qué tienen en el menú?" o "Muéstrame el menú".
+2. *Hacer un pedido*: Puedes decir algo como "Quiero 2 Roll California, 1 Roll Tempura".
+3. *Preguntar algo*: Por ejemplo, "¿Están abiertos?" o "¿Hacen entregas a domicilio?".
+4. *Ver tu pedido*: Escribe "Ver pedido?" para revisar los productos que has agregado.
+5. *Finalizar tu pedido*: Escribe "Finalizar pedido" para confirmar y enviar tu orden.
+
+¡Estoy aquí para ayudarte! ¿Qué te gustaría hacer primero?`,
+  },
+  ]);
   const [userInput, setInput] = useState("");
   const [menuCache, setMenuCache] = useState<any[]>([]);
-  const [currentOrder, setCurrentOrder] = useState<
+  const [currentOrder] = useState<
     { name: string; quantity: number; price?: number }[]
   >([]);
 
