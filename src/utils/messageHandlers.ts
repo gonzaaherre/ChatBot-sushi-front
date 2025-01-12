@@ -67,9 +67,14 @@ export const handleOrder = async (userInput: string, menuCache: any[], currentOr
         }
     });
 
-    let response = "Tu pedido ha sido actualizado:\n " + currentOrder.map((item) => {
-        return `- ${item.quantity} x ${item.name} ($${item.price} c/u)\n`;
-    });
+    const total = calculaTotal(currentOrder);
+
+    let response = "Tu pedido ha sido actualizado:\n";
+    response += currentOrder.map((item) => {
+        return `- ${item.quantity} x ${item.name} ($${item.price} c/u)`;
+    }).join("\n"); // Unir las líneas con un salto de línea, no con una coma.
+
+    response += `\nTotal: $${total.toFixed(2)}\n`;
     if (invalidProducts.length > 0) {
         response += "Algunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
     } else {
@@ -86,8 +91,11 @@ export const handleViewOrder = (currentOrder: any[]): string => {
     }
 
     let response = "Aquí está tu pedido actual:\n";
+    const total = calculaTotal(currentOrder);
     currentOrder.forEach((item) => {
-        response += `- ${item.quantity} x ${item.name} ($${item.price} c/u)\n`;
+        response += `- ${item.quantity} x ${item.name} ($${item.price} c/u)
+        Total actual: $${total.toFixed(2)}\n`;
+
     });
 
     response += "¿Deseas agregar algo más o finalizar tu pedido?";
@@ -122,4 +130,7 @@ export const handleFinalizeOrder = async (currentOrder: any[], menuCache: any[])
         console.error("Error al enviar el pedido:", error);
         return "Hubo un problema al procesar tu pedido. Por favor, inténtalo nuevamente.";
     }
+};
+const calculaTotal = (currentOrder: any[]): number => {
+    return currentOrder.reduce((sum, item) => sum + item.quantity * item.price, 0);
 };
