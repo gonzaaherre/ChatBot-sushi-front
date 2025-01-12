@@ -13,7 +13,7 @@ export const initializeMenuCache = async () => {
       menuCache = response.data;
     }
     console.log("Caché del menú inicializado:", menuCache);
-    return menuCache; // <--- Add this line
+    return menuCache;
   } catch (error) {
     console.error("Error al inicializar el caché del menú:", error);
   }
@@ -53,7 +53,7 @@ export const verifyProducts = async (parsedOrder: { name: string, quantity: numb
   const results = await Promise.all(
     parsedOrder.map(async ({ name, quantity }) => {
       //encuentra el producto y obtiene sus detalles
-      console.log("Verificando producto:", name);
+      //console.log("Verificando producto:", name);
       const product = await verifyProduct(name);
 
       //eerificar si el producto existe
@@ -78,45 +78,50 @@ export const verifyProducts = async (parsedOrder: { name: string, quantity: numb
 
 
 
-export const createOrder = async (orderData: any) => {
+export const createOrder = async (orderData: { products: { product: string; quantity: number }[] }) => {
+  console.log("Datos de la orden:", orderData);
   try {
-    const response = await axios.post(`${API_BASE_URL}/order`, orderData);
+    const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
+      headers: { "Content-Type": "application/json" },
+    });
     console.log("Orden creada exitosamente:", response.data);
     return response.data;
-  } catch (error) {
-    console.error("Error al crear la orden:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("Error al crear la orden:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Error al crear la orden");
   }
 };
+
+
 
 export const parseOrder = (orderMessage: string, cachedMenu: Array<{ name: string }>) => {
   const parsedProducts: { quantity: number; name: string }[] = [];
 
-  //normalizar el mensaje
+  // Normalizar el mensaje
   const normalizedMessage = orderMessage
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") //eliminar tildes
+    .replace(/[\u0300-\u036f]/g, "") // Eliminar tildes
     .toLowerCase()
-    .replace(/[\?\s]+/g, " "); //reemplazar signos de interrogación y espacios por un solo espacio
+    .replace(/[\?\s]+/g, " "); // Reemplazar signos de interrogación y espacios por un solo espacio
 
   console.log("Mensaje normalizado:", normalizedMessage);
 
   cachedMenu.forEach((product) => {
-    //normalizar el nombre del producto
+    // Normalizar el nombre del producto
     const normalizedName = product.name
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") //eliminar tildes
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar tildes
       .toLowerCase();
 
     console.log("Buscando producto en caché:", normalizedName);
 
-    //usar una expresión regular para buscar coincidencias de productos en el mensaje
-    const regex = new RegExp(`(\\d+)\\s+.*${normalizedName}.*`, "gi");
+    // Usar una expresión regular para buscar coincidencias de productos en el mensaje
+    const regex = new RegExp(`(\\d+)\\s+${normalizedName}`, "gi");
     let match;
 
     // Buscar coincidencias con el nombre del producto
     while ((match = regex.exec(normalizedMessage)) !== null) {
-      const quantity = match[1] ? parseInt(match[1], 10) : 1;  //si no hay cantidad, por defecto sera 1
+      const quantity = parseInt(match[1], 10); // Obtener la cantidad
       console.log(`Producto encontrado: ${product.name} con cantidad: ${quantity}`);
       parsedProducts.push({ quantity, name: product.name });
     }

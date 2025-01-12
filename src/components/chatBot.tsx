@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import chatbotImg from "../assets/chatbot.jpg";
 import "./chatBot.css";
 import { getFAQByKeyword } from "../services/FAQ-service";
-import { initializeMenuCache, parseOrder, verifyProducts, } from "../services/order-service";
+import { initializeMenuCache, parseOrder, verifyProducts, createOrder } from "../services/order-service";
 import { getMessageType } from "../utils/typeMessage";
 import { getAllProducts } from "../services/product-service";
 
@@ -12,6 +12,9 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [userInput, setInput] = useState("");
   const [menuCache, setMenuCache] = useState<any[]>([]);
+  const [currentOrder, setCurrentOrder] = useState<
+    { name: string; quantity: number; price?: number }[]
+  >([]);
 
   useEffect(() => {
     const loadMenuCache = async () => {
@@ -106,7 +109,7 @@ const ChatBot = () => {
             //parsear el mensaje del usuario para extraer los productos
             const parsedOrder = parseOrder(userInput, menuCache); //ahora solo tenemos los nombres de los productos
 
-            //const productNames = parsedOrder.map((item) => item.name);
+            // const productNames = parsedOrder.map((item) => item.name);
 
             console.log("Productos identificados:", parsedOrder);
 
@@ -116,21 +119,87 @@ const ChatBot = () => {
             }
 
             const { validProducts, invalidProducts } = await verifyProducts(parsedOrder);
+            // if (validProducts.length > 0) {
+            //   validProducts.forEach((item: any) => {
+            //     botResponse += `- ${item.quantity} x ${item.name} ($${item.details.price} c/u)\n`;
+            //   });
+            // }
 
-            if (validProducts.length > 0) {
-              validProducts.forEach((item: any) => {
-                botResponse += `- ${item.quantity} x ${item.name} ($${item.details.price} c/u)\n`;
+            // if (invalidProducts.length > 0) {
+            //   botResponse += "\nNo encontramos estos productos en el menú:\n";
+            //   invalidProducts.forEach((item: any) => {
+            //     botResponse += `- ${item.quantity} x ${item.name}\n`;
+            //   });
+            //   botResponse += "¿Quieres ver el menú para seleccionar otros productos?";
+            // }
+
+            // Actualizar el estado de la orden temporal con los productos válidos
+            setCurrentOrder((prevOrder) => {
+              const updatedOrder = [...prevOrder];
+              validProducts.forEach((item) => {
+                const existingItem = updatedOrder.find((p) => p.name === item.name);
+                if (existingItem) {
+                  existingItem.quantity += item.quantity; // Actualiza cantidad
+                } else {
+                  updatedOrder.push({ name: item.name, quantity: item.quantity, price: item.details.price });
+                }
               });
-            }
+              return updatedOrder;
+            });
 
+            botResponse = "Tu pedido ha sido actualizado. ";
             if (invalidProducts.length > 0) {
-              botResponse += "\nNo encontramos estos productos en el menú:\n";
-              invalidProducts.forEach((item: any) => {
-                botResponse += `- ${item.quantity} x ${item.name}\n`;
-              });
-              botResponse += "¿Quieres ver el menú para seleccionar otros productos?";
+              botResponse += "Algunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
+            } else {
+              botResponse += "¿Deseas agregar algo más o finalizar tu pedido?";
             }
             break;
+
+
+          case "ver orden":
+            if (currentOrder.length === 0) {
+              botResponse = "No tienes ningún producto en tu pedido. ¿Quieres agregar algo?";
+            } else {
+              botResponse = "Aquí está tu pedido actual:\n";
+              currentOrder.forEach((item) => {
+                botResponse += `- ${item.quantity} x ${item.name} ($${item.price} c/u)\n`;
+              });
+              botResponse += "¿Deseas agregar algo más o finalizar tu pedido?";
+            }
+            break;
+
+
+          case "finalizar pedido":
+            if (currentOrder.length === 0) {
+              botResponse = "No tienes productos en tu pedido. ¿Quieres agregar algo?";
+            } else {
+              try {
+                //mapea los productos usando el cache
+                const orderData = {
+                  products: currentOrder.map((item) => {
+                    const productInCache = menuCache.find((p) => p.name === item.name);
+                    if (!productInCache) {
+                      throw new Error(`Producto no encontrado en el menú: ${item.name}`);
+                    }
+                    return {
+                      product: productInCache._id, // Usa el ID del caché
+                      quantity: item.quantity,
+                    };
+                  }),
+                };
+
+                await createOrder(orderData); // Envía la orden
+                setCurrentOrder([]); // Limpia la orden después de enviarla
+                botResponse =
+                  "¡Tu pedido ha sido enviado exitosamente! Pronto nos pondremos en contacto contigo.";
+              } catch (error) {
+                console.error("Error al enviar el pedido:", error);
+                botResponse =
+                  "Hubo un problema al procesar tu pedido. Por favor, inténtalo nuevamente.";
+              }
+            }
+            break;
+
           default:
             console.log("Mensaje no reconocido.");
             botResponse = "Lo siento, no entiendo tu mensaje.";
