@@ -34,7 +34,7 @@ export const handleProductMenu = async () => {
                 return `**${product.name}**\n${product.description}\nPrecio: $${product.price}\n`;
             });
 
-            return `Aquí tienes nuestro menú:\n\n${productStrings.join("")}`;
+            return `Aquí tienes nuestro menú:\n\n${productStrings.join("\n")}`;
         } else {
             return "No encontré productos en el menú.";
         }
@@ -47,6 +47,60 @@ export const handleProductMenu = async () => {
 // Maneja los pedidos de productos
 export const handleOrder = async (userInput: string, menuCache: any[], currentOrder: any[]): Promise<string> => {
 
+    const modifyRegex = /modificar (\d+) (\w.+)/i;
+    const removeRegex = /eliminar (\w.+)/i;
+
+    const modifyMatch = userInput.match(modifyRegex);
+    const removeMatch = userInput.match(removeRegex);
+
+    if (modifyMatch) {
+        const newQuantity = parseInt(modifyMatch[1], 10);
+        const productName = modifyMatch[2]
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, ""); //normalizar el nombre
+
+        const productToModify = currentOrder.find((item) =>
+            item.name
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") === productName
+        );
+
+        if (productToModify) {
+            if (newQuantity > 0) {
+                productToModify.quantity = newQuantity;
+                return `La cantidad de ${productToModify.name} ha sido actualizada a ${newQuantity}.\n\n` + formatCurrentOrder(currentOrder);
+            } else {
+                currentOrder.splice(currentOrder.indexOf(productToModify), 1); // Eliminar el producto si la cantidad es 0
+                return `${productToModify.name} ha sido eliminado de tu pedido.\n\n` + formatCurrentOrder(currentOrder);
+            }
+        } else {
+            return `No encontré ${productName} en tu pedido. Por favor verifica el nombre e intenta de nuevo.`;
+        }
+    }
+
+    if (removeMatch) {
+        console.log("Eliminando:", removeMatch[1]);
+        const productName = removeMatch[1]
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, ""); // Normalizar el nombre
+        console.log("Producto a eliminar 1:", productName);
+
+        const productToRemove = currentOrder.find((item) =>
+            item.name
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") === productName
+        );
+        if (productToRemove) {
+            currentOrder.splice(currentOrder.indexOf(productToRemove), 1); // Eliminar el producto
+            return `${productToRemove.name} ha sido eliminado de tu pedido.\n\n` + formatCurrentOrder(currentOrder);
+        } else {
+            return `No encontré ${productName} en tu pedido. Por favor verifica el nombre e intenta de nuevo.`;
+        }
+    }
     //parsear el mensaje del usuario para extraer los productos
     const parsedOrder = parseOrder(userInput, menuCache); //ahora solo tenemos los nombres de los productos
 
@@ -66,19 +120,50 @@ export const handleOrder = async (userInput: string, menuCache: any[], currentOr
             currentOrder.push({ name: item.name, quantity: item.quantity, price: item.details.price });
         }
     });
+    return buildOrderResponse(currentOrder, invalidProducts);
+
+
+
+    // const total = calculaTotal(currentOrder);
+
+    // let response = "Tu pedido ha sido actualizado:\n";
+    // response += currentOrder.map((item) => {
+    //     return `- ${item.quantity} x ${item.name} ($${item.price} c/u)`;
+    // }).join("\n"); // Unir las líneas con un salto de línea, no con una coma.
+
+    // response += `\nTotal: $${total.toFixed(2)}\n`;
+    // if (invalidProducts.length > 0) {
+    //     response += "Algunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
+    // } else {
+    //     response += "¿Deseas agregar algo más o finalizar tu pedido?";
+    // }
+
+    // return response;
+};
+// Función para formatear el pedido actual
+const formatCurrentOrder = (currentOrder: any[]): string => {
+    if (currentOrder.length === 0) {
+        return "Tu pedido está vacío.";
+    }
 
     const total = calculaTotal(currentOrder);
 
-    let response = "Tu pedido ha sido actualizado:\n";
-    response += currentOrder.map((item) => {
-        return `- ${item.quantity} x ${item.name} ($${item.price} c/u)`;
-    }).join("\n"); // Unir las líneas con un salto de línea, no con una coma.
+    let response = "Tu pedido actual:\n";
+    response += currentOrder
+        .map((item) => `- ${item.quantity} x ${item.name} ($${item.price} c/u)`)
+        .join("\n");
+    response += `\nTotal actual: $${total.toFixed(2)}`;
+    return response;
+};
 
-    response += `\nTotal: $${total.toFixed(2)}\n`;
+// Función para construir la respuesta del pedido
+const buildOrderResponse = (currentOrder: any[], invalidProducts: any[]): string => {
+    let response = formatCurrentOrder(currentOrder);
+
     if (invalidProducts.length > 0) {
-        response += "Algunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
+        response += "\nAlgunos productos no fueron encontrados en el menú. ¿Quieres ver el menú?";
     } else {
-        response += "¿Deseas agregar algo más o finalizar tu pedido?";
+        response += "\n¿Deseas agregar algo más o finalizar tu pedido?";
     }
 
     return response;
@@ -93,11 +178,10 @@ export const handleViewOrder = (currentOrder: any[]): string => {
     let response = "Aquí está tu pedido actual:\n";
     const total = calculaTotal(currentOrder);
     currentOrder.forEach((item) => {
-        response += `- ${item.quantity} x ${item.name} ($${item.price} c/u)
-        Total actual: $${total.toFixed(2)}\n`;
+        response += `- ${item.quantity} x ${item.name} ($${item.price} c/u)\n`;
 
     });
-
+    response += `Total actual: $${total.toFixed(2)}\n `;
     response += "¿Deseas agregar algo más o finalizar tu pedido?";
     return response;
 };
