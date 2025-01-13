@@ -48,6 +48,10 @@ h1 {
     color: #555;
     margin-bottom: 15px;
     box-shadow: inset 0px 2px 6px rgba(0, 0, 0, 0.05);
+    scrollbar-width: thin;
+    scrollbar-color: #4CAF50 #e6f7ff;
+    /* Color del scroll y fondo */
+    scroll-behavior: smooth;
 }
 
 /* mensajes */
@@ -116,13 +120,6 @@ button:active {
     background-color: #3e8e41;
 }
 
-/* Personaliza la barra de desplazamiento */
-.conversation {
-    scrollbar-width: thin;
-    /* Para navegadores basados en Firefox */
-    scrollbar-color: #4CAF50 #e6f7ff;
-    /* Color del scroll y fondo */
-}
 
 .conversation::-webkit-scrollbar {
     width: 8px;

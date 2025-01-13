@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import chatbotImg from "../assets/chatbot.jpg";
 import "./chatBot.css";
 import { initializeMenuCache } from "../services/order-service";
@@ -7,6 +7,7 @@ import { handleUserMessage } from "../utils/handleUserMessage ";
 
 const ChatBot = () => {
   //estado para mensajes y entrada del usuario
+  const conversationEndRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([{
     role: "bot",
     content: `¡Hola! Bienvenido al bot de pedidos de sushi. 🎉🍣\n
@@ -64,7 +65,15 @@ Estas son algunas cosas que puedes hacer:
       handleSubmit(); //lLlamar a la función de envío
     }
   };
-
+  // Función para hacer scroll automático
+  const scrollToBottom = () => {
+    if (conversationEndRef.current) {
+      conversationEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
   return (
     <div className="chatbot-container">
       <img src={chatbotImg} alt="Chatbot" className="chatbot-image" />
@@ -78,6 +87,7 @@ Estas son algunas cosas que puedes hacer:
             {msg.content}
           </p>
         ))}
+        <div ref={conversationEndRef}></div>
       </div>
 
       <form className={"centered-form"} action={""} onSubmit={handleSubmit}>
