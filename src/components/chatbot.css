@@ -116,6 +116,34 @@ button:active {
     background-color: #3e8e41;
 }
 
+/* Personaliza la barra de desplazamiento */
+.conversation {
+    scrollbar-width: thin;
+    /* Para navegadores basados en Firefox */
+    scrollbar-color: #4CAF50 #e6f7ff;
+    /* Color del scroll y fondo */
+}
+
+.conversation::-webkit-scrollbar {
+    width: 8px;
+    /* Ancho de la barra */
+}
+
+.conversation::-webkit-scrollbar-track {
+    background: #e6f7ff;
+    /* Fondo de la barra */
+    border-radius: 10px;
+}
+
+.conversation::-webkit-scrollbar-thumb {
+    background-color: #4CAF50;
+    /* Color del scroll */
+    border-radius: 10px;
+    border: 2px solid #e6f7ff;
+    /* Espacio entre el scroll y la barra */
+}
+
+
 /* responsividad */
 @media (max-width: 500px) {
     .chatbot-container {

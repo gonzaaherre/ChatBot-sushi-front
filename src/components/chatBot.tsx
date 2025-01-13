@@ -49,7 +49,7 @@ Estas son algunas cosas que puedes hacer:
 
     //actualizar el estado con el nuevo mensaje
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    const botResponse = await handleUserMessage(userInput, menuCache, currentOrder);
+    const botResponse = await handleUserMessage(userInput, menuCache, currentOrder);//llamar a la función para manejar el mensaje del usuario
     setMessages((prev) => [...prev, { role: "bot", content: botResponse }]);
 
     setInput("");
