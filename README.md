@@ -1,50 +1,45 @@
-# React + TypeScript + Vite
+# Frontend - Chatbot Sushi Challenge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Framework
+**React**: Utilizado para crear la interfaz interactiva del chatbot.
 
-Currently, two official plugins are available:
+## Herramienta de Desarrollo
+**Vite**: Elegido por su rapidez y eficiencia en el manejo de archivos, Vite permite una mejor experiencia de desarrollo.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Características
+- Interfaz intuitiva para interactuar con el chatbot.
+- Diseño minimalista enfocado en la funcionalidad.
+  
+---
 
-## Expanding the ESLint configuration
+## Instrucciones para Instalar y Ejecutar el Frontend
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 1. Clonar el Repositorio
 
-- Configure the top-level `parserOptions` property like this:
+  Para comenzar, clona el repositorio del frontend desde GitHub:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+  https://github.com/gonzaaherre/ChatBot-sushi-front
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+  git clone https://github.com/gonzaaherre/ChatBot-sushi-front.git
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## 2. Configurar proyecto
+  Abre el proyecto clonado en tu IDE preferido.
+
+  Crea un archivo .env en la raíz del proyecto.
+
+  Copia el contenido del archivo .env.example proporcionado en el repositorio.
+
+## 3. Instalar Dependencias
+  Abre una terminal en el directorio del proyecto.
+
+  Ejecuta el siguiente comando para instalar las dependencias necesarias:
+
+  npm install
+
+## 4. ejecuta el servidor:
+  npm run dev
+
+## 5. Entra en el puerto del servido:
+  http://localhost:5173
+
