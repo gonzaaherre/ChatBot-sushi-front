@@ -65,7 +65,7 @@ Estas son algunas cosas que puedes hacer:
       handleSubmit(); //lLlamar a la función de envío
     }
   };
-  // Función para hacer scroll automático
+  // scroll automático
   const scrollToBottom = () => {
     if (conversationEndRef.current) {
       conversationEndRef.current.scrollIntoView({ behavior: "smooth" });

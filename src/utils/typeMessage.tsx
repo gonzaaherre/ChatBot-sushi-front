@@ -18,8 +18,9 @@ export const getMessageType = (message: string) => {
   }
   if (
     //lowerMessage.includes("pedido") ||
-    lowerMessage.includes("orden") ||
-    lowerMessage.includes("quiero")
+    lowerMessage.includes("eliminar") ||
+    lowerMessage.includes("quiero") ||
+    lowerMessage.includes("modificar")
   ) {
     return "order";
   }

@@ -1,9 +1,9 @@
 import axios from "axios";
 import { getAllProducts, getProductByName } from "./product-service";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-let menuCache: Array<{ name: string }> = [] // Caché del menú
+let menuCache: Array<{ name: string }> = []
 
 //cargar menu al iniciar
 export const initializeMenuCache = async () => {
@@ -28,7 +28,7 @@ export const verifyProduct = async (productName: string) => {
 
     if (cachedProduct) {
       console.log("Producto encontrado en caché:", cachedProduct);
-      return cachedProduct; //producto encontrado en caché
+      return cachedProduct;
     }
 
     console.log("product enviado al back :", productName);
@@ -36,13 +36,13 @@ export const verifyProduct = async (productName: string) => {
 
     if (response && response.data) {  //verificar que la respuesta sea válida
       console.log("Producto encontrado en el backend:", response.data);
-      return response.data; //producto encontrado en el backend
+      return response.data;
     } else {
       throw new Error("Producto no encontrado en el backend.");
     }
   } catch (error) {
     console.error("Error al buscar el producto en el backend:", error);
-    return null;  //retornar null si no se encuentra el producto
+    return null;
   }
 };
 
